@@ -12,7 +12,7 @@ namespace Topic_8___Collision_with_Rectangles
 
         int pacSpeed;
 
-        KeyboardState keyboardState;
+        KeyboardState keyboardState, oldState;
         MouseState mouseState;
 
         Texture2D pacUpTexture;
@@ -27,7 +27,7 @@ namespace Topic_8___Collision_with_Rectangles
         Rectangle exitRect;
 
         Texture2D barrierTexture;
-        Rectangle barrierRect1, barrierRect2;
+        List<Rectangle> barriers;
 
         Texture2D coinTexture;
         List<Rectangle> coins;
@@ -48,8 +48,9 @@ namespace Topic_8___Collision_with_Rectangles
             pacSpeed = 3;
             pacRect = new Rectangle(10, 10, 60, 60);
 
-            barrierRect1 = new Rectangle(0, 250, 350, 75);
-            barrierRect2 = new Rectangle(450, 250, 350, 75);
+            barriers = new List<Rectangle>();
+            barriers.Add(new Rectangle(0, 250, 350, 75));
+            barriers.Add(new Rectangle(450, 250, 350, 75));
 
             coins = new List<Rectangle>();
             coins.Add(new Rectangle(400, 50, coinTexture.Width, coinTexture.Height));
@@ -96,14 +97,12 @@ namespace Topic_8___Collision_with_Rectangles
                 pacRect.Y -= pacSpeed;
                 currentPacTexture = pacUpTexture;
 
-                if (pacRect.Intersects(barrierRect1))
+                foreach (Rectangle barrier in barriers)
                 {
-                    pacRect.Y = barrierRect1.Bottom;
-                }
-
-                if (pacRect.Intersects(barrierRect2))
-                {
-                    pacRect.Y = barrierRect2.Bottom;
+                    if (pacRect.Intersects(barrier))
+                    {
+                        pacRect.Y = barrier.Bottom;
+                    }
                 }
 
             }
@@ -112,14 +111,12 @@ namespace Topic_8___Collision_with_Rectangles
                 pacRect.Y += pacSpeed;
                 currentPacTexture = pacDownTexture;
 
-                if (pacRect.Intersects(barrierRect1))
+                foreach (Rectangle barrier in barriers)
                 {
-                    pacRect.Y = barrierRect1.Top - pacRect.Height;
-                }
-
-                if (pacRect.Intersects(barrierRect2))
-                {
-                    pacRect.Y = barrierRect2.Top - pacRect.Height;
+                    if (pacRect.Intersects(barrier))
+                    {
+                        pacRect.Y = barrier.Top - pacRect.Height;
+                    }
                 }
             }
             if (keyboardState.IsKeyDown(Keys.Left))
@@ -127,9 +124,12 @@ namespace Topic_8___Collision_with_Rectangles
                 pacRect.X -= pacSpeed;
                 currentPacTexture = pacLeftTexture;
 
-                if (pacRect.Intersects(barrierRect1))
+                foreach (Rectangle barrier in barriers)
                 {
-                    pacRect.X = barrierRect1.Right;
+                    if (pacRect.Intersects(barrier))
+                    {
+                        pacRect.X = barrier.Right;
+                    }
                 }
 
             }
@@ -138,9 +138,12 @@ namespace Topic_8___Collision_with_Rectangles
                 pacRect.X += pacSpeed;
                 currentPacTexture = pacRightTexture;
 
-                if (pacRect.Intersects(barrierRect2))
+                foreach (Rectangle barrier in barriers)
                 {
-                    pacRect.X = barrierRect2.Left - pacRect.Width;
+                    if (pacRect.Intersects(barrier))
+                    {
+                        pacRect.X = barrier.Left - pacRect.Width;
+                    }
                 }
 
             }
@@ -177,19 +180,15 @@ namespace Topic_8___Collision_with_Rectangles
 
             }
 
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (exitRect.Contains(pacRect))
             {
-                if(exitRect.Contains(mouseState.X, mouseState.Y))
+                if (oldState.IsKeyUp(Keys.Enter) && keyboardState.IsKeyDown(Keys.Enter))
                 {
                     Exit();
                 }
             }
 
-            if (exitRect.Contains(pacRect))
-            {
-                Exit();
-            }
-
+            oldState = keyboardState;
 
             base.Update(gameTime);
         }
@@ -199,8 +198,11 @@ namespace Topic_8___Collision_with_Rectangles
             GraphicsDevice.Clear(Color.CornflowerBlue);
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(barrierTexture, barrierRect1, Color.White);
-            _spriteBatch.Draw(barrierTexture, barrierRect2, Color.White);
+            foreach (Rectangle barrier in barriers)
+            {
+                _spriteBatch.Draw(barrierTexture, barrier, Color.White);
+            }
+
             _spriteBatch.Draw(exitTexture, exitRect, Color.White);
             _spriteBatch.Draw(currentPacTexture, pacRect, Color.White);
 
